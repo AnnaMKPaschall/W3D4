@@ -6,6 +6,7 @@ def it_was_ok
   # We can use ranges (a..b) inside a where method.
   #
   # Find the id, title, and score of all movies with scores between 2 and 3
+  Movie.select(:id, :title, :score).where(score: 2..3)
 
 end
 
@@ -20,6 +21,19 @@ def harrison_ford
   #
   # Find the id and title of all movies in which Harrison Ford
   # appeared but not as a lead actor
+  Movie
+    .select(:id, :title)
+    .joins(:actors)
+    .where(actors: {name: 'Harrison Ford'})
+    .where.not(castings: {ord: 1})
+  # ^^^^ Stringing two wheres or a where and a where not together is totally fine and simplifies the individual components
+
+  # "actors.name = 'Harrison Ford' AND castings.ord is NOT 1"
+  
+  
+  # Actor.select('movies.id, movies.title').join(:movies).to_sql
+  # .where("actor.name = 'Harrison Ford' AND NOT ord = 1").to_sql
+  #^^^^This would work but is much more verbose and relies on a lot more SQL syntax in strings
 
 end
 
@@ -37,6 +51,12 @@ def biggest_cast
   #
   # Find the id and title of the 3 movies with the
   # largest casts (i.e most actors)
+  Movie
+    .select(:id, :title)
+    .joins(:actors)
+    .group('movies.id')
+    .order('COUNT(*) DESC')
+    .limit(3)
 
 end
 
@@ -52,7 +72,14 @@ def directed_by_one_of(them)
   # Movie.where(yr: years)
   #
   # Find the id and title of all the movies directed by one of 'them'.
+  # Movie.select(:id, :title).includes(actors: {'director_id: actor.id'})
+  Movie.select(:id, :title).joins(:director).where(actors: {name: them})
 
+  #                           ^^association        ^^table    ^^name in actors table is incluced in them
+
+  
+
+  # .select(:id, :title)
 end
 
 def movie_names_before_1940
